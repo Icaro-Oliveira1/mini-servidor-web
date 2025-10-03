@@ -1,36 +1,36 @@
-# Nome do programa de teste final
-TARGET = test_log
+# Alvo principal agora é o servidor
+TARGET = servidor
 
 # Compilador
 CC = gcc
 
-# Flags de compilação
-# -Ilib: Diz ao compilador para procurar por arquivos de header (#include) na pasta 'lib'
-# -Wall: Habilita todos os avisos (warnings)
-# -pthread: Necessário para linkar a biblioteca de threads
+# VPATH para encontrar os fontes
+VPATH = lib:app
+
+# Flags de compilação (-Ilib para o header, -Iapp se necessário, -pthread para threads)
 CFLAGS = -Ilib -Wall -pthread
 
-# Arquivos fonte da biblioteca
-LIB_SRCS = lib/tslog.c
+# Fontes da biblioteca e da aplicação
+LIB_SRCS = tslog.c
+APP_SRCS = servidor.c
 
-# Arquivos fonte do teste
-TEST_SRCS = test/testlog.c
+# Lista final de fontes
+SRCS = $(LIB_SRCS) $(APP_SRCS)
 
-# Converte a lista de fontes (.c) para uma lista de objetos (.o)
-OBJS = $(LIB_SRCS:.c=.o) $(TEST_SRCS:.c=.o)
+# Lista de objetos
+OBJS = $(SRCS:.c=.o)
 
-# Regra principal: o que fazer quando digitar 'make'
+# Regra principal
 all: $(TARGET)
 
-# Regra para linkar o programa final
+# Regra para linkar o executável final do servidor
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
 
-# Regra de compilação genérica: como transformar um .c em um .o
-# Funciona para arquivos em qualquer subdiretório
+# Regra genérica para compilar .c em .o
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Regra para limpar os arquivos gerados
+# Regra para limpar tudo
 clean:
-	rm -f $(OBJS) $(TARGET) test.log
+	rm -f $(OBJS) $(TARGET) *.log

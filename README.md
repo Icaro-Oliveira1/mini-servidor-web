@@ -1,82 +1,91 @@
-============================================================
-       Projeto Mini Servidor Web - Etapa 1: libtslog
-============================================================
+# Projeto Mini Servidor Web (HTTP em C)
 
-Este documento contém as instruções para compilar e executar a primeira etapa do projeto: a criação e o teste da biblioteca de logging thread-safe (`libtslog`).
+Este documento contém as instruções completas para compilar, executar e testar os componentes do projeto Mini Servidor Web.
 
-O objetivo desta etapa é validar que a biblioteca consegue receber mensagens de múltiplas threads simultaneamente sem corromper o arquivo de log.
+O projeto está dividido em duas partes principais:
+1.  Uma biblioteca de logging thread-safe (`libtslog`).
+2.  Um protótipo de servidor web concorrente que utiliza a biblioteca de log.
 
+---
 
-----------------------------------------
-Estrutura de Arquivos
-----------------------------------------
+## Estrutura de Arquivos
 
-O projeto nesta etapa está organizado da seguinte forma:
+O projeto está organizado na seguinte estrutura:
 
+```
 /
+├── app/
+│   └── servidor.c        # Código-fonte do servidor web HTTP
 ├── lib/
 │   ├── tslog.c           # Implementação da biblioteca de logging
 │   └── tslog.h           # Header com a interface da biblioteca
 ├── test/
-│   └── testlog.c        # Programa de teste com múltiplas threads
-└── Makefile                # Script de automação da compilação
+│   └── test_log.c        # Programa para testar a libtslog
+├── www/
+│   └── index.html        # Página HTML simples para ser servida
+├── Makefile                # Script de automação da compilação
+└── test.sh                 # Script para testar o servidor com múltiplos clientes
+```
 
+---
 
-----------------------------------------
-Como Compilar e Executar
-----------------------------------------
+## Etapa 1: Testando a Biblioteca de Logging (libtslog)
 
-Para compilar e rodar o teste, siga os passos abaixo no seu terminal.
+O objetivo desta etapa é validar que a biblioteca `libtslog` consegue receber mensagens de múltiplas threads simultaneamente sem corromper o arquivo de log.
 
-1.  **Navegue até a pasta raiz do projeto.**
-
-2.  **Compile o projeto usando o Makefile:**
-    Execute o comando:
+1.  **Compile o programa de teste:**
+    O `Makefile` está configurado para compilar tanto o servidor quanto o teste.
     ```sh
     make
     ```
-    Este comando irá ler as regras do `Makefile`, compilar todos os arquivos `.c` necessários e criar um executável final chamado `test_log` na pasta raiz.
 
-3.  **Execute o programa de teste:**
-    Para rodar o teste que simula múltiplas threads escrevendo logs, execute:
+2.  **Execute o programa de teste:**
     ```sh
     ./test_log
     ```
 
-----------------------------------------
-Resultado Esperado
-----------------------------------------
+3.  **Resultado Esperado:**
+    Um arquivo `test.log` será criado. Verifique se as mensagens de todas as threads estão completas e não há linhas corrompidas, provando que o mutex da biblioteca funciona.
 
-Após executar o programa de teste, um novo arquivo chamado `test.log` será criado na pasta raiz do projeto.
+---
 
-O conteúdo deste arquivo é a prova do sucesso. Você deve observar que:
-1.  As mensagens de log de todas as threads estarão presentes.
-2.  **O mais importante:** Cada linha de log estará perfeitamente formatada e completa. Não haverá linhas "quebradas" ou com texto de diferentes threads misturado.
+## Etapa 2: Executando o Servidor Web
 
-Isso demonstra que o `mutex` implementado em `libtslog` está funcionando corretamente, serializando o acesso ao arquivo e garantindo a segurança em um ambiente concorrente (thread-safe).
+Esta etapa executa o protótipo do servidor web, que é capaz de atender requisições GET de forma concorrente.
 
-**Exemplo de saída no `test.log`:**
-[2025-09-29 12:18:13] [SYSTEM] [ThreadID: 140176665368384] Logger inicializado. Criando 5 threads...
-[2025-09-29 12:18:13] [INFO] [ThreadID: 140176665364160] Mensagem 1 do trabalhador 1.
-[2025-09-29 12:18:13] [INFO] [ThreadID: 140176656971456] Mensagem 1 do trabalhador 2.
-[2025-09-29 12:18:13] [INFO] [ThreadID: 140176648578752] Mensagem 1 do trabalhador 3.
-[2025-09-29 12:18:13] [INFO] [ThreadID: 140176640186048] Mensagem 1 do trabalhador 4.
-[2025-09-29 12:18:13] [INFO] [ThreadID: 140176631793344] Mensagem 1 do trabalhador 5.
-...
-[2025-09-29 12:18:13] [DEBUG] [ThreadID: 140176656971456] Trabalhador 2 terminou.
-[2025-09-29 12:18:13] [DEBUG] [ThreadID: 140176640186048] Trabalhador 4 terminou.
-[2025-09-29 12:18:13] [DEBUG] [ThreadID: 140176648578752] Trabalhador 3 terminou.
-[2025-09-29 12:18:13] [DEBUG] [ThreadID: 140176665364160] Trabalhador 1 terminou.
-[2025-09-29 12:18:13] [DEBUG] [ThreadID: 140176631793344] Trabalhador 5 terminou.
-[2025-09-29 12:18:13] [SYSTEM] [ThreadID: 140176665368384] Teste concluído. Desligando o logger.
+1.  **Compile o servidor (se ainda não o fez):**
+    ```sh
+    make
+    ```
+    Este comando criará o executável `servidor`.
 
+2.  **Inicie o servidor:**
+    ```sh
+    ./servidor
+    ```
+    O terminal ficará ocupado, com o servidor escutando por conexões na porta 8080. As atividades serão registradas no arquivo `server.log`.
 
-----------------------------------------
-Limpeza do Projeto
-----------------------------------------
+3.  **Teste o servidor:**
 
-Para remover todos os arquivos gerados durante a compilação (arquivos objeto `.o`, o executável `test_log`) e também o arquivo `test.log`, utilize o comando `make clean`.
+    **A) Teste Manual com Navegador:**
+    - Abra seu navegador de internet.
+    - Acesse o endereço: `http://localhost:8080`
+    - Você deverá ver a página `index.html`.
 
-Execute na pasta raiz:
+    **B) Teste de Carga com Múltiplos Clientes:**
+    - Abra **um novo terminal** na mesma pasta do projeto.
+    - Dê permissão de execução ao script: `chmod +x test.sh`
+    - Execute o script: `./test.sh`
+
+4.  **Resultado Esperado:**
+    O script simulará múltiplos clientes. Verifique o arquivo `server.log` para ver o registro de todas as requisições, cada uma atendida por uma thread diferente.
+
+---
+
+## Limpeza do Projeto
+
+Para remover todos os arquivos gerados pela compilação e os logs, utilize o comando `make clean`.
+
 ```sh
 make clean
+```
