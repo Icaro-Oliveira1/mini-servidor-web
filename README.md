@@ -1,91 +1,69 @@
-# Projeto Mini Servidor Web (HTTP em C)
+# Projeto Final: Mini Servidor Web Concorrente em C
 
-Este documento contém as instruções completas para compilar, executar e testar os componentes do projeto Mini Servidor Web.
+Este projeto implementa um servidor web HTTP/1.0 simples, concorrente e gerenciável via linha de comando, desenvolvido em C utilizando pthreads e sockets POSIX.
 
-O projeto está dividido em duas partes principais:
-1.  Uma biblioteca de logging thread-safe (`libtslog`).
-2.  Um protótipo de servidor web concorrente que utiliza a biblioteca de log.
+## Funcionalidades
+* **Servidor HTTP Concorrente:** Atende múltiplas requisições simultaneamente usando um modelo de "thread por conexão".
+* **Serviço de Arquivos Estáticos:** Responde a requisições `GET`, servindo arquivos de um diretório `www/`.
+* **Logging Thread-Safe:** Todas as atividades são registradas em `server.log` usando a biblioteca `libtslog`.
+* **CLI de Gerenciamento:** O servidor pode ser iniciado, parado e verificado via linha de comando.
+* **Desligamento Gracioso:** Encerra de forma limpa, registrando estatísticas finais.
 
 ---
 
 ## Estrutura de Arquivos
-
-O projeto está organizado na seguinte estrutura:
-
 ```
 /
 ├── app/
-│   └── servidor.c        # Código-fonte do servidor web HTTP
+│   └── servidor.c        # Código-fonte do servidor web e da CLI
 ├── lib/
 │   ├── tslog.c           # Implementação da biblioteca de logging
-│   └── tslog.h           # Header com a interface da biblioteca
-├── test/
-│   └── test_log.c        # Programa para testar a libtslog
+│   └── tslog.h           # Header da biblioteca
 ├── www/
-│   └── index.html        # Página HTML simples para ser servida
-├── Makefile                # Script de automação da compilação
-└── test.sh                 # Script para testar o servidor com múltiplos clientes
+│   └── index.html        # Página HTML de exemplo
+├── Makefile                # Script de compilação
+└── test.sh                 # Script para teste de carga
+```
+---
+
+## Como Compilar e Usar
+
+**1. Compilar o Projeto**
+Na pasta raiz, execute o comando `make`. Isso irá gerar o executável `servidor`.
+```sh
+make
 ```
 
----
+**2. Gerenciando o Servidor (CLI)**
 
-## Etapa 1: Testando a Biblioteca de Logging (libtslog)
-
-O objetivo desta etapa é validar que a biblioteca `libtslog` consegue receber mensagens de múltiplas threads simultaneamente sem corromper o arquivo de log.
-
-1.  **Compile o programa de teste:**
-    O `Makefile` está configurado para compilar tanto o servidor quanto o teste.
+* **Iniciar o Servidor:**
+    O servidor será iniciado em background. Um arquivo `server.pid` será criado para rastrear o processo.
     ```sh
-    make
+    ./servidor start
     ```
 
-2.  **Execute o programa de teste:**
+* **Verificar o Status:**
+    Verifica se o arquivo `server.pid` existe e mostra o ID do processo.
     ```sh
-    ./test_log
+    ./servidor status
     ```
 
-3.  **Resultado Esperado:**
-    Um arquivo `test.log` será criado. Verifique se as mensagens de todas as threads estão completas e não há linhas corrompidas, provando que o mutex da biblioteca funciona.
-
----
-
-## Etapa 2: Executando o Servidor Web
-
-Esta etapa executa o protótipo do servidor web, que é capaz de atender requisições GET de forma concorrente.
-
-1.  **Compile o servidor (se ainda não o fez):**
+* **Parar o Servidor:**
+    Envia um sinal de término para o processo do servidor, que irá desligar de forma limpa.
     ```sh
-    make
+    ./servidor stop
     ```
-    Este comando criará o executável `servidor`.
+    Ao parar, as estatísticas finais serão gravadas em `server.log`.
 
-2.  **Inicie o servidor:**
-    ```sh
-    ./servidor
-    ```
-    O terminal ficará ocupado, com o servidor escutando por conexões na porta 8080. As atividades serão registradas no arquivo `server.log`.
-
-3.  **Teste o servidor:**
-
-    **A) Teste Manual com Navegador:**
-    - Abra seu navegador de internet.
-    - Acesse o endereço: `http://localhost:8080`
-    - Você deverá ver a página `index.html`.
-
-    **B) Teste de Carga com Múltiplos Clientes:**
-    - Abra **um novo terminal** na mesma pasta do projeto.
-    - Dê permissão de execução ao script: `chmod +x test.sh`
-    - Execute o script: `./test.sh`
-
-4.  **Resultado Esperado:**
-    O script simulará múltiplos clientes. Verifique o arquivo `server.log` para ver o registro de todas as requisições, cada uma atendida por uma thread diferente.
+**3. Testando o Servidor**
+Com o servidor rodando (`./servidor start`), você pode:
+* Acessar `http://localhost:8080` no seu navegador.
+* Executar o script de teste de carga: `chmod +x test.sh` e depois `./test.sh`.
 
 ---
 
-## Limpeza do Projeto
-
-Para remover todos os arquivos gerados pela compilação e os logs, utilize o comando `make clean`.
-
+## Limpeza
+Para remover todos os arquivos gerados (executáveis, objetos, logs, pid), use:
 ```sh
 make clean
 ```

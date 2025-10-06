@@ -1,36 +1,37 @@
-# Alvo principal agora é o servidor
-TARGET = servidor
+# Alvo principal padrão (o que é compilado quando se digita 'make')
+all: servidor
 
-# Compilador
+# --- Alvos ---
+TARGET_SERVER = servidor
+TARGET_TEST = test_log
+
+# --- Compilador e Flags ---
 CC = gcc
-
-# VPATH para encontrar os fontes
-VPATH = lib:app
-
-# Flags de compilação (-Ilib para o header, -Iapp se necessário, -pthread para threads)
+VPATH = lib:app:test
 CFLAGS = -Ilib -Wall -pthread
 
-# Fontes da biblioteca e da aplicação
-LIB_SRCS = tslog.c
-APP_SRCS = servidor.c
+# --- Fontes ---
+SERVER_SRCS = servidor.c tslog.c
+TEST_SRCS = test_log.c tslog.c
 
-# Lista final de fontes
-SRCS = $(LIB_SRCS) $(APP_SRCS)
+# --- Objetos ---
+SERVER_OBJS = $(SERVER_SRCS:.c=.o)
+TEST_OBJS = $(TEST_SRCS:.c=.o)
 
-# Lista de objetos
-OBJS = $(SRCS:.c=.o)
+# --- Regras de Build ---
 
-# Regra principal
-all: $(TARGET)
+# Regra para construir o servidor
+servidor: $(SERVER_OBJS)
+	$(CC) $(CFLAGS) -o $(TARGET_SERVER) $(SERVER_OBJS)
 
-# Regra para linkar o executável final do servidor
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
+# Regra para construir o programa de teste
+test: $(TEST_OBJS)
+	$(CC) $(CFLAGS) -o $(TARGET_TEST) $(TEST_OBJS)
 
 # Regra genérica para compilar .c em .o
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Regra para limpar tudo
+# --- Regras de Limpeza ---
 clean:
-	rm -f $(OBJS) $(TARGET) *.log
+	rm -f $(SERVER_OBJS) $(TEST_OBJS) $(TARGET_SERVER) $(TARGET_TEST) *.log *.pid
